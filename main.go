@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	version = "0.0.2"
+	version = "0.1.0"
 	tool    = "drone-xlsx"
 	usage   = `
 Usage:
@@ -53,6 +53,17 @@ func gethostname(ip string, hosts *[]lair.Host) string {
 	return ""
 }
 
+func getos(ip string, hosts *[]lair.Host) string {
+	for _, host := range *hosts {
+		if host.IPv4 == ip {
+			if host.OS.Weight == 100 {
+				return host.OS.Fingerprint
+			}
+		}
+	}
+	return ""
+}
+
 func writesheet(project *lair.Project, outfile string) {
 	header := []string{
 		"#",
@@ -64,6 +75,7 @@ func writesheet(project *lair.Project, outfile string) {
 		"Solution",
 		"CVEs",
 		"References",
+		"Operating System",
 		"Host",
 		"Hostname(s)",
 		"Port",
@@ -118,6 +130,8 @@ func writesheet(project *lair.Project, outfile string) {
 			cell.Value = strings.Join(issue.CVEs, "\n")
 			cell = row.AddCell()
 			cell.Value = strings.Join(refs, "\n")
+			cell = row.AddCell()
+			cell.Value = getos(host.IPv4, &project.Hosts)
 			cell = row.AddCell()
 			cell.Value = host.IPv4
 			cell = row.AddCell()
